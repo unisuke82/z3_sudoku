@@ -20,21 +20,26 @@ def have_value():
     solver.add(have)
 
 def column_unique():
-    cells_c = And([Or([And(X[0][j][a], X[1][j][b], X[2][j][c], X[3][j][d])
+    cells_c = And([Or([And(X[i][j][a])
+                    for i in range(sudoku_size)
                     for a,b,c,d in itertools.permutations(range(sudoku_size))])
                     for j in range(sudoku_size)
                ])
     solver.add(cells_c)
 
 def row_unique():
-    row_c = And([ Or([And(X[i][0][a], X[i][1][b], X[i][2][c], X[i][3][d])
-                        for a,b,c,d in itertools.permutations(range(sudoku_size))])
+    row_c = And([ Or([And(X[i][j][a])
+                    for j in range(sudoku_size)
+                    for a,b,c,d in itertools.permutations(range(sudoku_size))])
                     for i in range(sudoku_size)
                     ])
     solver.add(row_c)
 
 def square_unique():
-    square_c = And([ Or([And(X[i*2][j*2][a], X[i*2+1][j*2][b], X[i*2][j*2+1][c], X[i*2+1][j*2+1][d])
+    square_c = And([ Or([And(X[i*int(math.sqrt(sudoku_size))][j*int(math.sqrt(sudoku_size))][a],
+                             X[i*int(math.sqrt(sudoku_size))+1][j*int(math.sqrt(sudoku_size))][b],
+                             X[i*int(math.sqrt(sudoku_size))][j*int(math.sqrt(sudoku_size))+1][c],
+                             X[i*int(math.sqrt(sudoku_size))+1][j*int(math.sqrt(sudoku_size))+1][d])
                          for a,b,c,d in itertools.permutations(range(sudoku_size))])
                      for i in range(int(math.sqrt(sudoku_size)))
                      for j in range(int(math.sqrt(sudoku_size)))
