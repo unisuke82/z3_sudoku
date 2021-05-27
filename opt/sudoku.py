@@ -1,45 +1,58 @@
 from z3 import *
-import itertools
 import math
 
 solver = Solver()
-sudoku_size = 4
+sudoku_size = 9
 
 X = [ [[Bool("P_%s_%s_%s" % (ri, cj, k+1))
         for k in range(sudoku_size)]
-        for cj in range(sudoku_size)]
-        for ri in range(sudoku_size)
-    ]
+       for cj in range(sudoku_size)]
+      for ri in range(sudoku_size)
+      ]
 
 def have_value():
-    have = And([ Or([And(X[i][j][a], Not(X[i][j][b]), Not(X[i][j][c]), Not(X[i][j][d]))
-                     for a,b,c,d in itertools.permutations(range(sudoku_size))])
+    have = And([ Or(X[i][j][0], X[i][j][1], X[i][j][2], X[i][j][3],X[i][j][4], X[i][j][5], X[i][j][6], X[i][j][7],X[i][j][8] )
+                 for j in range(sudoku_size)
+                 for i in range(sudoku_size)
+                 ])
+    not_same = And([ Or(Not(X[i][j][a]), Not(X[i][j][b]))
+                     for a in range(sudoku_size)
+                     for b in range(a+1,sudoku_size)
                  for j in range(sudoku_size)
                  for i in range(sudoku_size)
                  ])
     solver.add(have)
+    solver.add(not_same)
 
 def column_unique():
-    cells_c = And([Or([And(X[0][j][a], X[1][j][b], X[2][j][c], X[3][j][d])
-                    for a,b,c,d in itertools.permutations(range(sudoku_size))])
-                    for j in range(sudoku_size)
-               ])
-    solver.add(cells_c)
+    for j in range(sudoku_size):
+        not_same_in_cells = And([ Or( Not(X[m][j][a]), Not(X[n][j][a]) )
+                                  for a in range(sudoku_size)
+                                  for m in range(sudoku_size)
+                                  for n in range(m+1,sudoku_size)
+                                  ])
+        solver.add(not_same_in_cells)
 
 def row_unique():
-    row_c = And([ Or([And(X[i][0][a], X[i][1][b], X[i][2][c], X[i][3][d])
-                        for a,b,c,d in itertools.permutations(range(sudoku_size))])
-                    for i in range(sudoku_size)
-                    ])
-    solver.add(row_c)
+    for i in range(sudoku_size):
+        not_same_in_rows = And([ Or( Not(X[i][m][a]), Not(X[i][n][a]) )
+                                  for a in range(sudoku_size)
+                                  for m in range(sudoku_size)
+                                  for n in range(m+1,sudoku_size)
+                                  ])
+        solver.add(not_same_in_rows)
 
 def square_unique():
-    square_c = And([ Or([And(X[i*2][j*2][a], X[i*2+1][j*2][b], X[i*2][j*2+1][c], X[i*2+1][j*2+1][d])
-                         for a,b,c,d in itertools.permutations(range(sudoku_size))])
-                     for i in range(int(math.sqrt(sudoku_size)))
-                     for j in range(int(math.sqrt(sudoku_size)))
-                     ])
-    solver.add(square_c)
+    for i in range(int(math.sqrt(sudoku_size))):
+        for j in range(int(math.sqrt(sudoku_size))):
+            not_same_in_squares = And([ Or( Not(X[i*int(math.sqrt(sudoku_size))+m][j*int(math.sqrt(sudoku_size))+n][a]), Not(X[i*int(math.sqrt(sudoku_size))+p][j*int(math.sqrt(sudoku_size))+q][a]) )
+                                        for a in range(sudoku_size)
+                                        for m in range(int(math.sqrt(sudoku_size)))
+                                        for n in range(int(math.sqrt(sudoku_size)))
+                                        for p in range(int(math.sqrt(sudoku_size)))
+                                        for q in range(n+1,int(math.sqrt(sudoku_size)))
+                                        ])
+            solver.add(not_same_in_squares)
 
 have_value()
 column_unique()
@@ -48,24 +61,36 @@ square_unique()
 
 solver.add(
     And(
-        X[0][2][0],
-        X[1][1][3],
-        X[1][3][1],
-        X[2][0][2],
-        X[2][2][3],
-        X[3][1][0],
+        X[0][6][4],
+        X[1][1][1],
+        X[1][2][0],
+        X[1][3][6],
+        X[2][2][8],
+        X[2][3][0],
+        X[2][5][5],
+        X[3][4][3],
+        X[4][2][1],
+        X[4][4][4],
+        X[4][5][2],
+        X[5][7][6],
+        X[5][8][1],
+        X[6][3][8],
+        X[6][8][0],
+        X[8][0][4],
+        X[8][6][2],
     )
 )
 
 solver.check()
-solver.model()
 
 if solver.check()==sat:
+    solver.model()
     r = [ [ [ solver.model().evaluate(X[i][j][k]) for k in range(sudoku_size) ].index(True)+1
             for j in range(sudoku_size) ]
           for i in range(sudoku_size)
           ]
-    print(r)
+    for row in r:
+        print(' '.join(row.__str__()))
 
 else:
     print(solver.check())
