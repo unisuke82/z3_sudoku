@@ -1,5 +1,8 @@
 from z3 import *
 import math
+import time
+
+startTime = time.time()
 
 solver = Solver()
 sudoku_size = 9
@@ -11,7 +14,7 @@ X = [ [[Bool("P_%s_%s_%s" % (ri, cj, k+1))
       ]
 
 def have_value():
-    have = And([ Or(X[i][j][0], X[i][j][1], X[i][j][2], X[i][j][3],X[i][j][4], X[i][j][5], X[i][j][6], X[i][j][7],X[i][j][8] )
+    have = And([ Or([X[i][j][k] for k in range(sudoku_size)])
                  for j in range(sudoku_size)
                  for i in range(sudoku_size)
                  ])
@@ -90,7 +93,14 @@ if solver.check()==sat:
           for i in range(sudoku_size)
           ]
     for row in r:
-        print(' '.join(row.__str__()))
+        for num in row:
+            print(num,end=' ')
+        print('')
 
 else:
     print(solver.check())
+
+endTime = time.time()
+runTime = endTime - startTime
+
+print('run time : '+ str(runTime))
