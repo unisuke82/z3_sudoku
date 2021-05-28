@@ -3,15 +3,33 @@ import math
 import time
 
 startTime = time.time()
-
 solver = Solver()
-sudoku_size = 9
+
+problem = [
+    [0,0,0,0,9,4,0,3,0],
+    [0,0,0,5,1,0,0,0,7],
+    [0,8,9,0,0,0,0,4,0],
+    [0,0,0,0,0,0,2,0,8],
+    [0,6,0,2,0,1,0,5,0],
+    [1,0,2,0,0,0,0,0,0],
+    [0,7,0,0,0,0,5,2,0],
+    [9,0,0,0,6,5,0,0,0],
+    [0,4,0,9,7,0,0,0,0]]
+sudoku_size = len(problem)
 
 X = [ [[Bool("P_%s_%s_%s" % (ri, cj, k+1))
         for k in range(sudoku_size)]
        for cj in range(sudoku_size)]
       for ri in range(sudoku_size)
       ]
+
+init = []
+for ri,row in enumerate(problem):
+    for cj,num in enumerate(row):
+        if num!=0:
+            init.append(X[ri][cj][num-1])
+
+solver.add(And(init))
 
 def have_value():
     have = And([ Or([X[i][j][k] for k in range(sudoku_size)])
@@ -61,32 +79,6 @@ have_value()
 column_unique()
 row_unique()
 square_unique()
-
-solver.add(
-    And(
-        X[0][0][7],
-        X[1][2][2],
-        X[1][3][5],
-        X[2][1][6],
-        X[2][4][8],
-        X[2][6][1],
-        X[3][1][4],
-        X[3][5][6],
-        X[4][4][3],
-        X[4][5][4],
-        X[4][6][6],
-        X[5][3][0],
-        X[5][7][2],
-        X[6][2][0],
-        X[6][7][5],
-        X[6][8][7],
-        X[7][2][7],
-        X[7][3][4],
-        X[7][7][0],
-        X[8][1][8],
-        X[8][6][3]
-    )
-)
 
 solver.check()
 

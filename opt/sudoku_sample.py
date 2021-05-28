@@ -49,6 +49,7 @@ s = Solver()
 s.add(sudoku_c + instance_c)
 if s.check() == sat:
     m = s.model()
+    print(m)
     r = [ [ m.evaluate(X[i][j]) for j in range(9) ]
           for i in range(9) ]
     print_matrix(r)
